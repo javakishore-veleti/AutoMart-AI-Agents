@@ -138,8 +138,6 @@ Persistent tracking of vehicles of interest:
 - Receive notifications on price changes
 - Share favorites with family members or advisors
 
----
-
 ## User Personas
 
 ### First-Time Buyer
@@ -156,8 +154,6 @@ A buyer who knows exactly what specifications they want and needs efficient filt
 
 ### Trade-In Customer
 Someone looking to trade their current vehicle and apply the value toward a new purchase. Needs help understanding trade-in value and how it affects financing.
-
----
 
 ## Interaction Patterns
 
@@ -184,8 +180,6 @@ Someone looking to trade their current vehicle and apply the value toward a new 
 
 **AI**: "Great choices for your needs. I found 47 vehicles matching your criteria. Here are my top recommendations..."
 
----
-
 ## Business Value
 
 ### For Customers
@@ -209,8 +203,6 @@ Someone looking to trade their current vehicle and apply the value toward a new 
 - Scalable customer support through AI
 - Continuous learning from interactions
 
----
-
 ## Success Metrics
 
 ### Customer Experience
@@ -231,8 +223,6 @@ Someone looking to trade their current vehicle and apply the value toward a new 
 - Successful tool invocation rate
 - Response quality ratings
 
----
-
 ## Future Capabilities
 
 ### Planned Enhancements
@@ -249,8 +239,6 @@ Someone looking to trade their current vehicle and apply the value toward a new 
 - Market trend analysis and timing advice ("Prices for this model typically drop in September")
 - End-to-end purchase facilitation
 - Post-purchase ownership assistant
-
----
 
 ## Summary
 
