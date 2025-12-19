@@ -11,7 +11,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>automart-mcp-server</module>
-    </modules>
+   </modules>
     <groupId>com.jk.labs.ai</groupId>
 	<artifactId>AutoMart-AI-Agents</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
