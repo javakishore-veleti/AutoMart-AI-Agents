@@ -6,13 +6,10 @@ AutoMart AI Agents is an intelligent vehicle marketplace platform that leverages
 
 Rather than navigating complex filter menus and search forms, users can simply describe what they're looking for in plain English. The AI understands intent, asks clarifying questions, and delivers personalized vehicle recommendations.
 
----
-
 ## Vision
 
 To create a seamless, conversational car buying experience where AI acts as a knowledgeable automotive advisor—understanding customer needs, providing expert guidance, and simplifying the path from browsing to purchase.
 
----
 
 ## Key Capabilities
 
