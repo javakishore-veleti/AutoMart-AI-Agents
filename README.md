@@ -8,7 +8,7 @@ Rather than navigating complex filter menus and search forms, users can simply d
 
 ## Vision
 
-To create a seamless, conversational car buying experience where AI acts as a knowledgeable automotive advisor—understanding customer needs, providing expert guidance, and simplifying the path from browsing to purchase.
+To create a seamless, conversational car buying experience where AI acts as a knowledgeable automotive advisor understanding customer needs, providing expert guidance, and simplifying the path from browsing to purchase.
 
 
 ## Key Capabilities
