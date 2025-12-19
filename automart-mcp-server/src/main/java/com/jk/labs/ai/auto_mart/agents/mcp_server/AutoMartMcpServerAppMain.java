@@ -4,9 +4,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class McpServerAppMain {
+public class AutoMartMcpServerAppMain {
 
     public static void main(String[] args) {
-        SpringApplication.run(McpServerAppMain.class, args);
+        SpringApplication.run(AutoMartMcpServerAppMain.class, args);
     }
 }

@@ -1,0 +1,907 @@
+openapi: 3.0.3
+info:
+  title: AutoMart API
+  description: AutoMart Vehicle Inventory and Search API
+  version: 1.0.0
+  contact:
+    name: JK Labs AI
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development
+  - url: https://api.automart.example.com/v1
+    description: Production
+
+tags:
+  - name: Inventory
+    description: Vehicle search and details
+  - name: Favorites
+    description: User favorites management
+  - name: Financing
+    description: Financing calculations
+  - name: Filters
+    description: Filter options and metadata
+
+paths:
+  # ==================== INVENTORY ====================
+  /inventory/search:
+    post:
+      tags:
+        - Inventory
+      summary: Search vehicle inventory
+      description: Search vehicles with comprehensive filters
+      operationId: searchInventory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /inventory/vehicles/{vehicleId}:
+    get:
+      tags:
+        - Inventory
+      summary: Get vehicle details
+      description: Get complete details for a specific vehicle
+      operationId: getVehicleDetails
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "VH-001"
+      responses:
+        '200':
+          description: Vehicle details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+        '404':
+          description: Vehicle not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /inventory/compare:
+    post:
+      tags:
+        - Inventory
+      summary: Compare vehicles
+      description: Side-by-side comparison of 2-4 vehicles
+      operationId: compareVehicles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompareRequest'
+      responses:
+        '200':
+          description: Comparison result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompareResponse'
+        '400':
+          description: Invalid request (need 2-4 vehicles)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ==================== FILTERS ====================
+  /filters/options:
+    get:
+      tags:
+        - Filters
+      summary: Get all filter options
+      description: Get available values for all filters
+      operationId: getAllFilterOptions
+      responses:
+        '200':
+          description: All filter options
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllFilterOptions'
+
+  /filters/options/{filterType}:
+    get:
+      tags:
+        - Filters
+      summary: Get specific filter options
+      description: Get available values for a specific filter type
+      operationId: getFilterOptions
+      parameters:
+        - name: filterType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - makes
+              - models
+              - bodyTypes
+              - fuelTypes
+              - features
+              - exteriorColors
+              - interiorColors
+              - drivetrains
+              - transmissions
+              - cylinders
+          example: "makes"
+        - name: make
+          in: query
+          required: false
+          description: Required when filterType is 'models'
+          schema:
+            type: string
+          example: "Honda"
+      responses:
+        '200':
+          description: Filter options
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FilterOptions'
+
+  # ==================== FAVORITES ====================
+  /favorites:
+    get:
+      tags:
+        - Favorites
+      summary: Get user favorites
+      description: List all favorited vehicles for a user
+      operationId: getFavorites
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "user-123"
+      responses:
+        '200':
+          description: List of favorites
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FavoritesResponse'
+
+    post:
+      tags:
+        - Favorites
+      summary: Add to favorites
+      description: Add a vehicle to user favorites
+      operationId: addToFavorites
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FavoriteRequest'
+      responses:
+        '201':
+          description: Added to favorites
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FavoriteResponse'
+        '409':
+          description: Already in favorites
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /favorites/{vehicleId}:
+    delete:
+      tags:
+        - Favorites
+      summary: Remove from favorites
+      description: Remove a vehicle from user favorites
+      operationId: removeFromFavorites
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "VH-001"
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "user-123"
+      responses:
+        '204':
+          description: Removed from favorites
+        '404':
+          description: Not found in favorites
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ==================== FINANCING ====================
+  /financing/estimate:
+    post:
+      tags:
+        - Financing
+      summary: Get financing estimate
+      description: Calculate monthly payment and loan details
+      operationId: getFinancingEstimate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinancingRequest'
+      responses:
+        '200':
+          description: Financing estimate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinancingResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    # ==================== REQUEST SCHEMAS ====================
+    SearchRequest:
+      type: object
+      properties:
+        keyword:
+          type: string
+          description: Free text search (make, model, or keyword)
+          example: "Honda SUV"
+
+        # Price & Payment
+        priceMin:
+          type: number
+          format: double
+          minimum: 0
+          example: 15000
+        priceMax:
+          type: number
+          format: double
+          example: 50000
+        monthlyPaymentMax:
+          type: number
+          format: double
+          example: 500
+        downPaymentMax:
+          type: number
+          format: double
+          example: 5000
+
+        # Vehicle Basics
+        makes:
+          type: array
+          items:
+            type: string
+          example: ["Honda", "Toyota"]
+        models:
+          type: array
+          items:
+            type: string
+          example: ["Civic", "CR-V"]
+        bodyTypes:
+          type: array
+          items:
+            type: string
+            enum: [SUV, Sedan, Truck, Coupe, Minivan, Convertible, Wagon, Hatchback]
+          example: ["SUV", "Sedan"]
+
+        # Year & Mileage
+        yearMin:
+          type: integer
+          minimum: 1990
+          example: 2020
+        yearMax:
+          type: integer
+          example: 2025
+        mileageMin:
+          type: integer
+          minimum: 0
+          example: 0
+        mileageMax:
+          type: integer
+          example: 50000
+
+        # Fuel & Efficiency
+        fuelTypes:
+          type: array
+          items:
+            type: string
+            enum: [Gas, Diesel, Electric, Hybrid, Plug-In Hybrid]
+          example: ["Hybrid", "Electric"]
+        mpgMin:
+          type: integer
+          minimum: 0
+          example: 30
+        mpgMax:
+          type: integer
+          example: 140
+
+        # Features
+        features:
+          type: array
+          items:
+            type: string
+          example: ["Apple CarPlay", "Heated Seats", "Sunroof"]
+
+        # Colors
+        exteriorColors:
+          type: array
+          items:
+            type: string
+          example: ["Black", "White", "Silver"]
+        interiorColors:
+          type: array
+          items:
+            type: string
+          example: ["Black", "Beige"]
+
+        # Specs
+        seatingCapacityMin:
+          type: integer
+          minimum: 2
+          example: 5
+        seatingCapacityMax:
+          type: integer
+          maximum: 12
+          example: 7
+        drivetrains:
+          type: array
+          items:
+            type: string
+            enum: [4WD, AWD, FWD, RWD]
+          example: ["AWD", "FWD"]
+        transmissions:
+          type: array
+          items:
+            type: string
+            enum: [Automatic, Manual]
+          example: ["Automatic"]
+        cylinders:
+          type: array
+          items:
+            type: string
+            enum: ["4", "6", "8", "Other"]
+          example: ["4", "6"]
+
+        # Options
+        freeShippingOnly:
+          type: boolean
+          default: false
+        greatDealsOnly:
+          type: boolean
+          default: false
+
+        # Pagination & Sorting
+        sortBy:
+          type: string
+          enum: [price, mileage, year, relevance]
+          default: relevance
+        sortOrder:
+          type: string
+          enum: [asc, desc]
+          default: asc
+        page:
+          type: integer
+          minimum: 0
+          default: 0
+        pageSize:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+
+    CompareRequest:
+      type: object
+      required:
+        - vehicleIds
+      properties:
+        vehicleIds:
+          type: array
+          items:
+            type: string
+          minItems: 2
+          maxItems: 4
+          example: ["VH-001", "VH-002", "VH-003"]
+
+    FavoriteRequest:
+      type: object
+      required:
+        - userId
+        - vehicleId
+      properties:
+        userId:
+          type: string
+          example: "user-123"
+        vehicleId:
+          type: string
+          example: "VH-001"
+
+    FinancingRequest:
+      type: object
+      required:
+        - vehiclePrice
+      properties:
+        vehiclePrice:
+          type: number
+          format: double
+          example: 35000
+        downPayment:
+          type: number
+          format: double
+          default: 0
+          example: 5000
+        tradeInValue:
+          type: number
+          format: double
+          default: 0
+          example: 8000
+        loanTermMonths:
+          type: integer
+          enum: [24, 36, 48, 60, 72, 84]
+          default: 60
+          example: 60
+        interestRate:
+          type: number
+          format: double
+          description: Annual interest rate (if not provided, uses default rate)
+          example: 6.5
+        creditScore:
+          type: string
+          enum: [Excellent, Good, Fair, Poor]
+          description: Used to estimate interest rate if not provided
+          example: "Good"
+
+    # ==================== RESPONSE SCHEMAS ====================
+    SearchResponse:
+      type: object
+      properties:
+        totalCount:
+          type: integer
+          example: 1543
+        page:
+          type: integer
+          example: 0
+        pageSize:
+          type: integer
+          example: 20
+        totalPages:
+          type: integer
+          example: 78
+        vehicles:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleSummary'
+
+    Vehicle:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "VH-001"
+        make:
+          type: string
+          example: "Honda"
+        model:
+          type: string
+          example: "CR-V"
+        trim:
+          type: string
+          example: "EX-L"
+        year:
+          type: integer
+          example: 2023
+        mileage:
+          type: integer
+          example: 15420
+        price:
+          type: number
+          format: double
+          example: 32590
+        originalPrice:
+          type: number
+          format: double
+          description: Original price if there's a price drop
+          example: 34990
+        monthlyPayment:
+          type: number
+          format: double
+          example: 485
+        vin:
+          type: string
+          example: "1HGBH41JXMN109186"
+        stockNumber:
+          type: string
+          example: "STK-2024-001"
+        bodyType:
+          type: string
+          example: "SUV"
+        fuelType:
+          type: string
+          example: "Gas"
+        mpgCity:
+          type: integer
+          example: 28
+        mpgHighway:
+          type: integer
+          example: 34
+        mpgCombined:
+          type: integer
+          example: 30
+        drivetrain:
+          type: string
+          example: "AWD"
+        transmission:
+          type: string
+          example: "Automatic"
+        engine:
+          type: string
+          example: "1.5L Turbo 4-Cylinder"
+        cylinders:
+          type: string
+          example: "4"
+        horsepower:
+          type: integer
+          example: 190
+        seatingCapacity:
+          type: integer
+          example: 5
+        exteriorColor:
+          type: string
+          example: "Lunar Silver Metallic"
+        interiorColor:
+          type: string
+          example: "Black"
+        features:
+          type: array
+          items:
+            type: string
+          example: ["Apple CarPlay", "Android Auto", "Heated Seats", "Sunroof", "Leather Seats"]
+        safetyFeatures:
+          type: array
+          items:
+            type: string
+          example: ["Collision Mitigation", "Lane Keep Assist", "Adaptive Cruise Control"]
+        images:
+          type: array
+          items:
+            type: string
+          example: ["https://images.automart.com/vh-001/front.jpg", "https://images.automart.com/vh-001/side.jpg"]
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["Great Deal", "Free Shipping"]
+        location:
+          type: string
+          example: "Atlanta, GA"
+        freeShipping:
+          type: boolean
+          example: true
+        carfaxUrl:
+          type: string
+          example: "https://www.carfax.com/vehicle/1HGBH41JXMN109186"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    VehicleSummary:
+      type: object
+      description: Condensed vehicle info for search results
+      properties:
+        id:
+          type: string
+          example: "VH-001"
+        make:
+          type: string
+          example: "Honda"
+        model:
+          type: string
+          example: "CR-V"
+        trim:
+          type: string
+          example: "EX-L"
+        year:
+          type: integer
+          example: 2023
+        mileage:
+          type: integer
+          example: 15420
+        price:
+          type: number
+          format: double
+          example: 32590
+        originalPrice:
+          type: number
+          format: double
+          example: 34990
+        monthlyPayment:
+          type: number
+          format: double
+          example: 485
+        bodyType:
+          type: string
+          example: "SUV"
+        fuelType:
+          type: string
+          example: "Gas"
+        drivetrain:
+          type: string
+          example: "AWD"
+        exteriorColor:
+          type: string
+          example: "Silver"
+        thumbnailUrl:
+          type: string
+          example: "https://images.automart.com/vh-001/thumb.jpg"
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["Great Deal", "Free Shipping"]
+        freeShipping:
+          type: boolean
+          example: true
+        location:
+          type: string
+          example: "Atlanta, GA"
+
+    CompareResponse:
+      type: object
+      properties:
+        vehicles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vehicle'
+        comparison:
+          type: object
+          properties:
+            lowestPrice:
+              type: string
+              example: "VH-001"
+            lowestMileage:
+              type: string
+              example: "VH-002"
+            newestYear:
+              type: string
+              example: "VH-003"
+            bestMpg:
+              type: string
+              example: "VH-001"
+            bestValue:
+              type: string
+              description: Best price-to-features ratio
+              example: "VH-002"
+
+    FavoritesResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          example: "user-123"
+        count:
+          type: integer
+          example: 5
+        favorites:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleSummary'
+
+    FavoriteResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Vehicle added to favorites"
+        userId:
+          type: string
+          example: "user-123"
+        vehicleId:
+          type: string
+          example: "VH-001"
+        favoritedAt:
+          type: string
+          format: date-time
+
+    FinancingResponse:
+      type: object
+      properties:
+        vehiclePrice:
+          type: number
+          format: double
+          example: 35000
+        downPayment:
+          type: number
+          format: double
+          example: 5000
+        tradeInValue:
+          type: number
+          format: double
+          example: 8000
+        amountFinanced:
+          type: number
+          format: double
+          example: 22000
+        loanTermMonths:
+          type: integer
+          example: 60
+        interestRate:
+          type: number
+          format: double
+          example: 6.5
+        monthlyPayment:
+          type: number
+          format: double
+          example: 430.33
+        totalInterest:
+          type: number
+          format: double
+          example: 3819.80
+        totalCost:
+          type: number
+          format: double
+          example: 25819.80
+        paymentBreakdown:
+          type: array
+          description: Optional amortization schedule (first 6 months)
+          items:
+            type: object
+            properties:
+              month:
+                type: integer
+              principal:
+                type: number
+                format: double
+              interest:
+                type: number
+                format: double
+              balance:
+                type: number
+                format: double
+
+    AllFilterOptions:
+      type: object
+      properties:
+        makes:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterOption'
+        bodyTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterOption'
+        fuelTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterOption'
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterOption'
+        exteriorColors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColorFilterOption'
+        interiorColors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColorFilterOption'
+        drivetrains:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterOption'
+        transmissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterOption'
+        cylinders:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterOption'
+        priceRange:
+          $ref: '#/components/schemas/RangeOption'
+        yearRange:
+          $ref: '#/components/schemas/RangeOption'
+        mileageRange:
+          $ref: '#/components/schemas/RangeOption'
+        mpgRange:
+          $ref: '#/components/schemas/RangeOption'
+        seatingRange:
+          $ref: '#/components/schemas/RangeOption'
+
+    FilterOptions:
+      type: object
+      properties:
+        filterType:
+          type: string
+          example: "makes"
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterOption'
+
+    FilterOption:
+      type: object
+      properties:
+        value:
+          type: string
+          example: "Honda"
+        displayName:
+          type: string
+          example: "Honda"
+        count:
+          type: integer
+          description: Number of vehicles with this filter value
+          example: 245
+
+    ColorFilterOption:
+      allOf:
+        - $ref: '#/components/schemas/FilterOption'
+        - type: object
+          properties:
+            hexCode:
+              type: string
+              example: "#000000"
+
+    RangeOption:
+      type: object
+      properties:
+        min:
+          type: number
+          example: 6000
+        max:
+          type: number
+          example: 170000
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          example: 400
+        error:
+          type: string
+          example: "Bad Request"
+        message:
+          type: string
+          example: "Invalid filter value"
+        path:
+          type: string
+          example: "/api/v1/inventory/search"
